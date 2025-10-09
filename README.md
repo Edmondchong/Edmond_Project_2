@@ -1,4 +1,4 @@
-# DEMO 
+# Edmond's Project 2 DEMO 
 
 ### ⚠️The “Complete Project” – including FastAPI backend, LangChain RAG logic & Excel vectorization pipeline – is KEPT PRIVATE to prevent unauthorized copying on the PUBLIC INTERNET.
 
