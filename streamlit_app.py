@@ -67,18 +67,31 @@ df, qa = load_rag_pipeline()
 def normalize_query(q):
     q = q.lower()
     replacements = {
+        # Units synonyms
         "quantity": "units",
         "quantities": "units",
         "count": "units",
         "amount": "units",
         "how many": "units",
+
+        # Remarks/usage synonyms
         "usage": "remarks",
-        "note": "remarks",
+        "used for": "remarks",
+        "use for": "remarks",
         "purpose": "remarks",
+        "note": "remarks",
+        "notes": "remarks",
+        "comment": "remarks",
+        "comments": "remarks",
+        "detail": "remarks",
+        "details": "remarks",
+        "explanation": "remarks",
+        "function": "remarks",
     }
     for k, v in replacements.items():
         q = q.replace(k, v)
     return q
+
 
 def extract_after(keywords, q):
     for k in keywords:
