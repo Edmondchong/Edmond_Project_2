@@ -10,16 +10,16 @@
 
 ---
 
-📖 Project Overview: 💬 Edmond’s Inventory Chatbot System
+### 📖 Project Overview: 💬 Edmond’s Inventory Chatbot System
 
 This project demonstrates how AI-powered retrieval-augmented generation (RAG) can turn traditional Excel inventory files into a conversational assistant.
 Users can ask natural-language questions such as:
 
 “What is the case number for the 20W spotlight?”
 
-“Which sheet is the DXR speaker listed under?”
+“Which case is 20W Spotlight stored?”
 
-“What is this item used for?”
+“What is the "Junction Box" used for?”
 
 The system retrieves and interprets information directly from Excel sheets and provides precise, context-aware answers.
 
