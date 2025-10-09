@@ -250,9 +250,26 @@ if st.button("Ask", type="primary"):
     st.subheader("🧾 Answer")
 
     ans = resp.get("answer", "")
+
+    # ✅ this whole section must be indented inside the 'if st.button'
     if isinstance(ans, list):
         for a in ans:
-            st.write(a)
+            # Try to parse pattern like "Item ➜ Units: X (Case Y, Sheet Z)"
+            if "➜" in a and "Units:" in a and "(" in a:
+                try:
+                    item_part = a.split("➜")[0].strip()
+                    units_part = a.split("Units:")[1].split("(")[0].strip()
+                    location_part = a.split("(")[1].strip(")")
+                    st.markdown(f"""
+                    **🧾 Item:** {item_part}  
+                    **📦 Units:** {units_part}  
+                    **📍 Location:** {location_part}
+                    """)
+                    st.divider()
+                except Exception:
+                    st.write(a)
+            else:
+                st.write(a)
     else:
         st.write(ans)
 
@@ -261,6 +278,7 @@ if st.button("Ask", type="primary"):
         with st.expander("📚 Retrieved context (from Excel rows)"):
             for s in resp["sources"]:
                 st.write(f"- {s}")
+
 else:
     st.caption("💬 Tip: Use the example buttons above for reliable demo queries.")
 
