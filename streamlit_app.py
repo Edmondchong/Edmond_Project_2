@@ -96,48 +96,59 @@ def fuzzy_filter(df, item, topn=6, cutoff=0.4):
 def structured_lookup(query, df):
     q = normalize_query(query)
 
-    # --- Optional case or sheet filter ---
-    case_match = re.search(r"\b[a-zA-Z]\d+\b", q)
-    sheet_match = re.search(r"sheet\s*([a-zA-Z])", q, re.IGNORECASE)
+    # --- Detect case or sheet in query ---
+    case_match = re.search(r"\b([A-Za-z]\d+)\b", q)
+    sheet_match = re.search(r"sheet\s*([A-Za-z])", q, re.IGNORECASE)
+
+    # Start with full dataset
     subset = df.copy()
+    case_name, sheet_name = None, None
 
     if sheet_match:
         sheet_name = sheet_match.group(1).upper()
         subset = subset[subset["Sheet"].astype(str).str.upper() == sheet_name]
 
     if case_match:
-        case_name = case_match.group(0).upper()
+        case_name = case_match.group(1).upper()
         subset = subset[subset["Case"].astype(str).str.upper() == case_name]
 
-    # --- Where / which case ---
+    # Helper: fallback if subset is empty
+    def smart_search(item_phrase):
+        matches = fuzzy_filter(subset, item_phrase)
+        if matches.empty:  # fallback to full search if no match in subset
+            matches = fuzzy_filter(df, item_phrase)
+        return matches
+
+    # --- Handle different query types ---
     if any(p in q for p in ["where is", "which case", "location of"]):
         item_phrase = extract_after(["where is", "which case", "location of"], q)
-        matches = fuzzy_filter(subset, item_phrase)
+        matches = smart_search(item_phrase)
         if matches.empty:
-            return {"answer": f"Could not locate '{item_phrase}' in {case_name if case_match else 'any case'}."}
+            return {"answer": f"Could not locate '{item_phrase}'."}
         summary = ", ".join(matches["Case"].astype(str).unique())
         out = [f"{row['Item']} ➜ Case {row['Case']} (Sheet {row['Sheet']})" for _, row in matches.iterrows()]
         return {"answer": [f"Found in cases: {summary}"] + out}
 
-    # --- Units ---
+    # Units
     if "units" in q:
         item_phrase = extract_after(["units for", "units of", "units"], q)
-        matches = fuzzy_filter(subset, item_phrase)
+        matches = smart_search(item_phrase)
         if not matches.empty:
             out = [f"{row['Item']} ➜ Units: {row['Units']} (Case {row['Case']}, Sheet {row['Sheet']})"
                    for _, row in matches.head(5).iterrows()]
             return {"answer": out}
 
-    # --- Remarks / usage / what is used for ---
+    # Remarks / usage / what is used for
     if any(p in q for p in ["remarks", "usage", "used for", "purpose", "what is"]):
         item_phrase = extract_after(["remarks for", "usage for", "used for", "purpose of", "what is"], q)
-        matches = fuzzy_filter(subset, item_phrase)
+        matches = smart_search(item_phrase)
         if not matches.empty:
             out = [f"{row['Item']} ➜ {row['Remarks']} (Case {row['Case']}, Sheet {row['Sheet']})"
                    for _, row in matches.head(5).iterrows()]
             return {"answer": out}
 
     return None
+
 
 
 def ask_question_local(query):
