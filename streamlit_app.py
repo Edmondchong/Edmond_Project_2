@@ -175,13 +175,37 @@ def ask_question_local(query):
 # -------------------------------
 # Helper: Clean formatted display
 # -------------------------------
-def display_formatted_results(ans):
+def display_simple_results(ans):
+    """Used for top buttons (no Case/Sheet)."""
+    if isinstance(ans, list):
+        for a in ans:
+            if "➜" in a:
+                try:
+                    item_part = a.split("➜")[0].strip()
+                    if "Units:" in a:
+                        units_part = a.split("Units:")[1].split("(")[0].strip()
+                        st.markdown(f"**🧾 Item:** {item_part}  \n**📦 Units:** {units_part}")
+                    elif "Remarks:" in a:
+                        remarks_part = a.split("Remarks:")[1].split("(")[0].strip()
+                        st.markdown(f"**🧾 Item:** {item_part}  \n**📝 Remarks:** {remarks_part}")
+                    else:
+                        st.write(a)
+                    st.divider()
+                except Exception:
+                    st.write(a)
+            else:
+                st.write(a)
+    else:
+        st.write(ans)
+
+
+def display_detailed_results(ans):
+    """Used for Ask section (includes Case/Sheet)."""
     if isinstance(ans, list):
         for a in ans:
             if "➜" in a and "(" in a:
                 try:
                     item_part = a.split("➜")[0].strip()
-                    # Detect type of line: Units or Remarks
                     units_part = ""
                     remarks_part = ""
                     if "Units:" in a:
@@ -189,14 +213,12 @@ def display_formatted_results(ans):
                     elif "Remarks:" in a:
                         remarks_part = a.split("Remarks:")[1].split("(")[0].strip()
 
-                    # Extract case and sheet info
                     loc_text = a.split("(")[1].strip(")")
                     case_match = re.search(r"Case\s*([A-Za-z0-9]+)", loc_text)
                     sheet_match = re.search(r"Sheet\s*([A-Za-z])", loc_text)
                     case_text = case_match.group(1) if case_match else "N/A"
                     sheet_text = sheet_match.group(1) if sheet_match else "N/A"
 
-                    # Display structured format
                     st.markdown(f"""
                     **🧾 Item:** {item_part}  
                     {f'**📦 Units:** {units_part}  ' if units_part else ''}  
@@ -243,19 +265,19 @@ with col1:
     if st.button("📍 Where is this item?"):
         resp = ask_question_local(f"where is {item}")
         st.subheader("Answer")
-        display_formatted_results(resp.get("answer", ""))
+        display_simple_results(resp.get("answer", ""))
 
 with col2:
     if st.button("🔢 Units"):
         resp = ask_question_local(f"units for {item}")
         st.subheader("Answer")
-        display_formatted_results(resp.get("answer", ""))
+        display_simple_results(resp.get("answer", ""))
 
 with col3:
     if st.button("📝 Usage / Remarks"):
         resp = ask_question_local(f"what is {item} used for")
         st.subheader("Answer")
-        display_formatted_results(resp.get("answer", ""))
+        display_simple_results(resp.get("answer", ""))
 
 st.markdown("---")
 
@@ -287,7 +309,7 @@ q = st.text_input("Enter your question:", key="q")
 if st.button("Ask", type="primary"):
     resp = ask_question_local(q)
     st.subheader("🧾 Answer")
-    display_formatted_results(resp.get("answer", ""))
+    display_detailed_results(resp.get("answer", ""))
 
     if "sources" in resp and resp["sources"]:
         with st.expander("📚 Retrieved context (from Excel rows)"):
