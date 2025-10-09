@@ -6,7 +6,7 @@
 
 ### 👉 Try the live demo here: https://edmondproject2-6ptimyd3dnbgwopjjgdmxd.streamlit.app/
 
-🖼️ Example MRI images are available in the [Images_to_test_demo](./Images_to_test_demo) folder.  
+📄 The sample Excel file [ABC.xlsx](./ABC.xlsx) is included to let recruiters explore the data schema and test item queries interactively. 
 
 ---
 
