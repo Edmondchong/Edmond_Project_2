@@ -248,7 +248,7 @@ item = st.sidebar.selectbox("🎯 Select Item", items)
 selected_row = df_case[df_case["Item"] == item]
 
 st.sidebar.markdown("—")
-st.sidebar.dataframe(df_case[["Item", "Units", "Remarks"]], use_container_width=True, hide_index=True)
+st.sidebar.dataframe(df_case[["Item", "Units", "Remarks"]], width=True, hide_index=True)
 
 if not selected_row.empty:
     st.sidebar.markdown(f"**Units:** {selected_row.iloc[0]['Units']}")
