@@ -62,7 +62,7 @@ def load_rag_pipeline():
 df, qa = load_rag_pipeline()
 
 # -------------------------------
-# Helper functions (same as app.py)
+# Helper functions
 # -------------------------------
 def normalize_query(q):
     q = q.lower()
@@ -99,12 +99,14 @@ def extract_after(keywords, q):
             return q.split(k, 1)[-1].strip(" :?!.;'\"")
     return q
 
+
 def fuzzy_filter(df, item, topn=6, cutoff=0.4):
     item_norm = re.sub(r"[^a-z0-9]+", " ", item.lower())
     items_norm = df["Item"].astype(str).apply(lambda x: re.sub(r"[^a-z0-9]+", " ", x.lower()))
     cand = get_close_matches(item_norm, items_norm.tolist(), n=topn, cutoff=cutoff)
     mask = items_norm.isin(cand) | df["Item"].str.lower().str.contains(item.lower(), na=False)
     return df[mask]
+
 
 def structured_lookup(query, df):
     q = normalize_query(query)
@@ -113,10 +115,7 @@ def structured_lookup(query, df):
     case_match = re.search(r"\b([A-Za-z]\d+)\b", q)
     sheet_match = re.search(r"sheet\s*([A-Za-z])", q, re.IGNORECASE)
 
-    # Start with full dataset
     subset = df.copy()
-    case_name, sheet_name = None, None
-
     if sheet_match:
         sheet_name = sheet_match.group(1).upper()
         subset = subset[subset["Sheet"].astype(str).str.upper() == sheet_name]
@@ -125,14 +124,14 @@ def structured_lookup(query, df):
         case_name = case_match.group(1).upper()
         subset = subset[subset["Case"].astype(str).str.upper() == case_name]
 
-    # Helper: fallback if subset is empty
+    # --- Smart fuzzy search (with fallback) ---
     def smart_search(item_phrase):
         matches = fuzzy_filter(subset, item_phrase)
-        if matches.empty:  # fallback to full search if no match in subset
+        if matches.empty:
             matches = fuzzy_filter(df, item_phrase)
         return matches
 
-    # --- Handle different query types ---
+    # --- Where / Case ---
     if any(p in q for p in ["where is", "which case", "location of"]):
         item_phrase = extract_after(["where is", "which case", "location of"], q)
         matches = smart_search(item_phrase)
@@ -142,7 +141,7 @@ def structured_lookup(query, df):
         out = [f"{row['Item']} ➜ Case {row['Case']} (Sheet {row['Sheet']})" for _, row in matches.iterrows()]
         return {"answer": [f"Found in cases: {summary}"] + out}
 
-    # Units
+    # --- Units ---
     if "units" in q:
         item_phrase = extract_after(["units for", "units of", "units"], q)
         matches = smart_search(item_phrase)
@@ -151,17 +150,16 @@ def structured_lookup(query, df):
                    for _, row in matches.head(5).iterrows()]
             return {"answer": out}
 
-    # Remarks / usage / what is used for
+    # --- Remarks / Usage ---
     if any(p in q for p in ["remarks", "usage", "used for", "purpose", "what is"]):
         item_phrase = extract_after(["remarks for", "usage for", "used for", "purpose of", "what is"], q)
         matches = smart_search(item_phrase)
         if not matches.empty:
-            out = [f"{row['Item']} ➜ {row['Remarks']} (Case {row['Case']}, Sheet {row['Sheet']})"
+            out = [f"{row['Item']} ➜ Remarks: {row['Remarks']} (Case {row['Case']}, Sheet {row['Sheet']})"
                    for _, row in matches.head(5).iterrows()]
             return {"answer": out}
 
     return None
-
 
 
 def ask_question_local(query):
@@ -173,6 +171,46 @@ def ask_question_local(query):
         "answer": result["result"],
         "sources": [doc.page_content[:150] for doc in result["source_documents"]],
     }
+
+# -------------------------------
+# Helper: Clean formatted display
+# -------------------------------
+def display_formatted_results(ans):
+    if isinstance(ans, list):
+        for a in ans:
+            if "➜" in a and "(" in a:
+                try:
+                    item_part = a.split("➜")[0].strip()
+                    # Detect type of line: Units or Remarks
+                    units_part = ""
+                    remarks_part = ""
+                    if "Units:" in a:
+                        units_part = a.split("Units:")[1].split("(")[0].strip()
+                    elif "Remarks:" in a:
+                        remarks_part = a.split("Remarks:")[1].split("(")[0].strip()
+
+                    # Extract case and sheet info
+                    loc_text = a.split("(")[1].strip(")")
+                    case_match = re.search(r"Case\s*([A-Za-z0-9]+)", loc_text)
+                    sheet_match = re.search(r"Sheet\s*([A-Za-z])", loc_text)
+                    case_text = case_match.group(1) if case_match else "N/A"
+                    sheet_text = sheet_match.group(1) if sheet_match else "N/A"
+
+                    # Display structured format
+                    st.markdown(f"""
+                    **🧾 Item:** {item_part}  
+                    {f'**📦 Units:** {units_part}  ' if units_part else ''}  
+                    {f'**📝 Remarks:** {remarks_part}  ' if remarks_part else ''}  
+                    **📍 Case:** {case_text}  
+                    **📄 Sheet:** {sheet_text}
+                    """)
+                    st.divider()
+                except Exception:
+                    st.write(a)
+            else:
+                st.write(a)
+    else:
+        st.write(ans)
 
 # -------------------------------
 # Sidebar for browsing
@@ -204,26 +242,28 @@ col1, col2, col3 = st.columns(3)
 with col1:
     if st.button("📍 Where is this item?"):
         resp = ask_question_local(f"where is {item}")
-        st.write(resp["answer"])
+        st.subheader("Answer")
+        display_formatted_results(resp.get("answer", ""))
+
 with col2:
     if st.button("🔢 Units"):
         resp = ask_question_local(f"units for {item}")
-        st.write(resp["answer"])
+        st.subheader("Answer")
+        display_formatted_results(resp.get("answer", ""))
+
 with col3:
     if st.button("📝 Usage / Remarks"):
         resp = ask_question_local(f"what is {item} used for")
-        st.write(resp["answer"])
-
-st.markdown("---")
+        st.subheader("Answer")
+        display_formatted_results(resp.get("answer", ""))
 
 st.markdown("---")
 
 # -------------------------------
 # 💬 Free-form Chat + Example Questions
 # -------------------------------
-st.subheader("💬 Ask your own question")
+st.subheader("💬 Below section enables asking your own question")
 
-# --- Example questions ---
 examples = [
     f"where is {item}",
     f"units for {item}",
@@ -236,7 +276,6 @@ examples = [
 ]
 
 st.caption("💡 Click an example below to auto-fill the question box:")
-
 cols = st.columns(len(examples))
 for i, ex in enumerate(examples):
     if cols[i].button(ex):
@@ -248,48 +287,14 @@ q = st.text_input("Enter your question:", key="q")
 if st.button("Ask", type="primary"):
     resp = ask_question_local(q)
     st.subheader("🧾 Answer")
+    display_formatted_results(resp.get("answer", ""))
 
-    ans = resp.get("answer", "")
-
-    if isinstance(ans, list):
-        for a in ans:
-            # Try to parse pattern like "Item ➜ Units: X (Case Y, Sheet Z)"
-            if "➜" in a and "Units:" in a and "(" in a:
-                try:
-                    item_part = a.split("➜")[0].strip()
-                    units_part = a.split("Units:")[1].split("(")[0].strip()
-
-                    # Extract Case and Sheet info (if available)
-                    loc_text = a.split("(")[1].strip(")")
-                    case_match = re.search(r"Case\s*([A-Za-z0-9]+)", loc_text)
-                    sheet_match = re.search(r"Sheet\s*([A-Za-z])", loc_text)
-                    case_text = case_match.group(1) if case_match else "N/A"
-                    sheet_text = sheet_match.group(1) if sheet_match else "N/A"
-
-                    # Clean formatted display
-                    st.markdown(f"""
-                    **🧾 Item:** {item_part}  
-                    **📦 Units:** {units_part}  
-                    **📍 Case:** {case_text}  
-                    **📄 Sheet:** {sheet_text}
-                    """)
-                    st.divider()
-                except Exception:
-                    st.write(a)
-            else:
-                st.write(a)
-    else:
-        st.write(ans)
-
-    # Optional: show retrieved context for transparency
     if "sources" in resp and resp["sources"]:
         with st.expander("📚 Retrieved context (from Excel rows)"):
             for s in resp["sources"]:
                 st.write(f"- {s}")
-
 else:
     st.caption("💬 Tip: Use the example buttons above for reliable demo queries.")
 
 st.markdown("---")
 st.caption("🧠 Powered by LangChain + FAISS + Flan-T5 (Local Excel RAG Chatbot).")
-
