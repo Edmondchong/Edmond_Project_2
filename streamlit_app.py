@@ -96,30 +96,43 @@ def fuzzy_filter(df, item, topn=6, cutoff=0.4):
 def structured_lookup(query, df):
     q = normalize_query(query)
 
-    # Where / which case
+    # --- Optional case or sheet filter ---
+    case_match = re.search(r"\b[a-zA-Z]\d+\b", q)
+    sheet_match = re.search(r"sheet\s*([a-zA-Z])", q, re.IGNORECASE)
+    subset = df.copy()
+
+    if sheet_match:
+        sheet_name = sheet_match.group(1).upper()
+        subset = subset[subset["Sheet"].astype(str).str.upper() == sheet_name]
+
+    if case_match:
+        case_name = case_match.group(0).upper()
+        subset = subset[subset["Case"].astype(str).str.upper() == case_name]
+
+    # --- Where / which case ---
     if any(p in q for p in ["where is", "which case", "location of"]):
         item_phrase = extract_after(["where is", "which case", "location of"], q)
-        matches = fuzzy_filter(df, item_phrase)
+        matches = fuzzy_filter(subset, item_phrase)
         if matches.empty:
-            return {"answer": f"Could not locate '{item_phrase}'."}
+            return {"answer": f"Could not locate '{item_phrase}' in {case_name if case_match else 'any case'}."}
         summary = ", ".join(matches["Case"].astype(str).unique())
         out = [f"{row['Item']} ➜ Case {row['Case']} (Sheet {row['Sheet']})" for _, row in matches.iterrows()]
         return {"answer": [f"Found in cases: {summary}"] + out}
 
-    # Units
+    # --- Units ---
     if "units" in q:
         item_phrase = extract_after(["units for", "units of", "units"], q)
-        matches = fuzzy_filter(df, item_phrase)
-        if len(matches) > 0:
+        matches = fuzzy_filter(subset, item_phrase)
+        if not matches.empty:
             out = [f"{row['Item']} ➜ Units: {row['Units']} (Case {row['Case']}, Sheet {row['Sheet']})"
                    for _, row in matches.head(5).iterrows()]
             return {"answer": out}
 
-    # Remarks / usage / what is used for
+    # --- Remarks / usage / what is used for ---
     if any(p in q for p in ["remarks", "usage", "used for", "purpose", "what is"]):
         item_phrase = extract_after(["remarks for", "usage for", "used for", "purpose of", "what is"], q)
-        matches = fuzzy_filter(df, item_phrase)
-        if len(matches) > 0:
+        matches = fuzzy_filter(subset, item_phrase)
+        if not matches.empty:
             out = [f"{row['Item']} ➜ {row['Remarks']} (Case {row['Case']}, Sheet {row['Sheet']})"
                    for _, row in matches.head(5).iterrows()]
             return {"answer": out}
