@@ -236,6 +236,7 @@ def display_detailed_results(ans):
     else:
         st.write(ans)
 
+
 # -------------------------------
 # Sidebar for browsing
 # -------------------------------
