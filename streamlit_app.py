@@ -216,19 +216,54 @@ with col3:
 
 st.markdown("---")
 
-# Freeform chat
-q = st.text_input("💬 Ask your own question:")
+st.markdown("---")
+
+# -------------------------------
+# 💬 Free-form Chat + Example Questions
+# -------------------------------
+st.subheader("💬 Ask your own question")
+
+# --- Example questions ---
+examples = [
+    f"where is {item}",
+    f"units for {item}",
+    f"what is {item} used for",
+    f"remarks for {item}",
+    f"items in case {case}",
+    "find spotlight",
+    "which items have less than 3 units in sheet C",
+    "summarize case A1"
+]
+
+st.caption("💡 Click an example below to auto-fill the question box:")
+
+cols = st.columns(len(examples))
+for i, ex in enumerate(examples):
+    if cols[i].button(ex):
+        st.session_state["q"] = ex
+
+# --- Input box for custom queries ---
+q = st.text_input("Enter your question:", key="q")
+
 if st.button("Ask", type="primary"):
     resp = ask_question_local(q)
+    st.subheader("🧾 Answer")
+
     ans = resp.get("answer", "")
     if isinstance(ans, list):
         for a in ans:
             st.write(a)
     else:
         st.write(ans)
-    if "sources" in resp:
-        with st.expander("Retrieved context"):
-            for s in resp["sources"]:
-                st.write("-", s)
 
-st.caption("🧠 Local RAG + Excel + Flan-T5, no FastAPI required.")
+    # Optional: show retrieved context for transparency
+    if "sources" in resp and resp["sources"]:
+        with st.expander("📚 Retrieved context (from Excel rows)"):
+            for s in resp["sources"]:
+                st.write(f"- {s}")
+else:
+    st.caption("💬 Tip: Use the example buttons above for reliable demo queries.")
+
+st.markdown("---")
+st.caption("🧠 Powered by LangChain + FAISS + Flan-T5 (Local Excel RAG Chatbot).")
+
