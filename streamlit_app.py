@@ -251,37 +251,35 @@ if st.button("Ask", type="primary"):
 
     ans = resp.get("answer", "")
 
-   
     if isinstance(ans, list):
-    for a in ans:
-        # Try to parse pattern like "Item ➜ Units: X (Case Y, Sheet Z)"
-        if "➜" in a and "Units:" in a and "(" in a:
-            try:
-                item_part = a.split("➜")[0].strip()
-                units_part = a.split("Units:")[1].split("(")[0].strip()
+        for a in ans:
+            # Try to parse pattern like "Item ➜ Units: X (Case Y, Sheet Z)"
+            if "➜" in a and "Units:" in a and "(" in a:
+                try:
+                    item_part = a.split("➜")[0].strip()
+                    units_part = a.split("Units:")[1].split("(")[0].strip()
 
-                # Extract Case and Sheet info (if available)
-                loc_text = a.split("(")[1].strip(")")
-                case_match = re.search(r"Case\s*([A-Za-z0-9]+)", loc_text)
-                sheet_match = re.search(r"Sheet\s*([A-Za-z])", loc_text)
-                case_text = case_match.group(1) if case_match else "N/A"
-                sheet_text = sheet_match.group(1) if sheet_match else "N/A"
+                    # Extract Case and Sheet info (if available)
+                    loc_text = a.split("(")[1].strip(")")
+                    case_match = re.search(r"Case\s*([A-Za-z0-9]+)", loc_text)
+                    sheet_match = re.search(r"Sheet\s*([A-Za-z])", loc_text)
+                    case_text = case_match.group(1) if case_match else "N/A"
+                    sheet_text = sheet_match.group(1) if sheet_match else "N/A"
 
-                # Clean formatted display
-                st.markdown(f"""
-                **🧾 Item:** {item_part}  
-                **📦 Units:** {units_part}  
-                **📍 Case:** {case_text}  
-                **📄 Sheet:** {sheet_text}
-                """)
-                st.divider()
-            except Exception:
+                    # Clean formatted display
+                    st.markdown(f"""
+                    **🧾 Item:** {item_part}  
+                    **📦 Units:** {units_part}  
+                    **📍 Case:** {case_text}  
+                    **📄 Sheet:** {sheet_text}
+                    """)
+                    st.divider()
+                except Exception:
+                    st.write(a)
+            else:
                 st.write(a)
-        else:
-            st.write(a)
-else:
-    st.write(ans)
-
+    else:
+        st.write(ans)
 
     # Optional: show retrieved context for transparency
     if "sources" in resp and resp["sources"]:
