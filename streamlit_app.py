@@ -182,21 +182,31 @@ def display_simple_results(ans):
             if "➜" in a:
                 try:
                     item_part = a.split("➜")[0].strip()
+                    html = ""
                     if "Units:" in a:
                         units_part = a.split("Units:")[1].split("(")[0].strip()
-                        st.markdown(f"**🧾 Item:** {item_part}  \n**📦 Units:** {units_part}")
+                        html = f"""
+                        <div style='background-color: #262730; padding: 10px; border-radius: 10px; margin-bottom: 10px;'>
+                            <p><b>🧾 Item:</b> {item_part}</p>
+                            <p><b>📦 Units:</b> {units_part}</p>
+                        </div>
+                        """
                     elif "Remarks:" in a:
                         remarks_part = a.split("Remarks:")[1].split("(")[0].strip()
-                        st.markdown(f"**🧾 Item:** {item_part}  \n**📝 Remarks:** {remarks_part}")
-                    else:
-                        st.write(a)
-                    st.divider()
+                        html = f"""
+                        <div style='background-color: #262730; padding: 10px; border-radius: 10px; margin-bottom: 10px;'>
+                            <p><b>🧾 Item:</b> {item_part}</p>
+                            <p><b>📝 Remarks:</b> {remarks_part}</p>
+                        </div>
+                        """
+                    st.markdown(html, unsafe_allow_html=True)
                 except Exception:
                     st.write(a)
             else:
                 st.write(a)
     else:
         st.write(ans)
+
 
 def display_detailed_results(ans):
     """Used for Ask section (includes Case/Sheet)."""
@@ -212,7 +222,7 @@ def display_detailed_results(ans):
                     elif "Remarks:" in a:
                         remarks_part = a.split("Remarks:")[1].split("(")[0].strip()
 
-                    # Extract the "(Case A4, Sheet A)" part robustly
+                    # Extract Case + Sheet robustly
                     loc_match = re.search(r"\(.*?Case\s*([A-Za-z0-9]+).*?Sheet\s*([A-Za-z])", a)
                     if loc_match:
                         case_text = loc_match.group(1)
@@ -220,20 +230,23 @@ def display_detailed_results(ans):
                     else:
                         case_text, sheet_text = "N/A", "N/A"
 
-                    st.markdown(f"""
-                    **🧾 Item:** {item_part}  
-                    {f'**📦 Units:** {units_part}  ' if units_part else ''}  
-                    {f'**📝 Remarks:** {remarks_part}  ' if remarks_part else ''}  
-                    **📍 Case:** {case_text}  
-                    **📄 Sheet:** {sheet_text}
-                    """)
-                    st.divider()
+                    # Card-style HTML
+                    html = f"""
+                    <div style='background-color: #262730; padding: 15px; border-radius: 10px; margin-bottom: 15px;'>
+                        <p><b>🧾 Item:</b> {item_part}</p>
+                        {f"<p><b>📦 Units:</b> {units_part}</p>" if units_part else ""}
+                        {f"<p><b>📝 Remarks:</b> {remarks_part}</p>" if remarks_part else ""}
+                        <p style='color: #bbb;'><b>📍 Case:</b> {case_text} &nbsp;&nbsp; <b>📄 Sheet:</b> {sheet_text}</p>
+                    </div>
+                    """
+                    st.markdown(html, unsafe_allow_html=True)
                 except Exception:
                     st.write(a)
             else:
                 st.write(a)
     else:
         st.write(ans)
+
 
 
 
