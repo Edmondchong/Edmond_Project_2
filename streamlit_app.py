@@ -16,19 +16,6 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 DATA_PATH = "ABC.xlsx"
 st.set_page_config(page_title="📦 Edmond's Inventory Chatbot (Excel + RAG)", layout="wide")
 
-# ✅ Sidebar styling
-st.markdown("""
-    <style>
-        /* Make sidebar wider */
-        section[data-testid="stSidebar"] {
-            width: 420px !important;
-        }
-        /* Adjust content padding so it doesn't overlap */
-        div[data-testid="stToolbar"] + div[data-testid="stDecoration"] + div > div:first-child {
-            padding-left: 430px;
-        }
-    </style>
-""", unsafe_allow_html=True)
 
 # -------------------------------
 # Load Excel + Build RAG Pipeline
@@ -265,7 +252,7 @@ item = st.sidebar.selectbox("🎯 Select Item", items)
 selected_row = df_case[df_case["Item"] == item]
 
 st.sidebar.markdown("—")
-st.sidebar.dataframe(df_case[["Item", "Units", "Remarks"]], width=True, hide_index=True)
+st.sidebar.dataframe(df_case[["Item", "Units", "Remarks"]], width=400, hide_index=True)
 
 if not selected_row.empty:
     st.sidebar.markdown(f"**Units:** {selected_row.iloc[0]['Units']}")
