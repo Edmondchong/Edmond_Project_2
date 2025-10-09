@@ -198,7 +198,6 @@ def display_simple_results(ans):
     else:
         st.write(ans)
 
-
 def display_detailed_results(ans):
     """Used for Ask section (includes Case/Sheet)."""
     if isinstance(ans, list):
@@ -206,18 +205,20 @@ def display_detailed_results(ans):
             if "➜" in a and "(" in a:
                 try:
                     item_part = a.split("➜")[0].strip()
-                    units_part = ""
-                    remarks_part = ""
+                    units_part, remarks_part = "", ""
+
                     if "Units:" in a:
                         units_part = a.split("Units:")[1].split("(")[0].strip()
                     elif "Remarks:" in a:
                         remarks_part = a.split("Remarks:")[1].split("(")[0].strip()
 
-                    loc_text = a.split("(")[1].strip(")")
-                    case_match = re.search(r"Case\s*([A-Za-z0-9]+)", loc_text)
-                    sheet_match = re.search(r"Sheet\s*([A-Za-z])", loc_text)
-                    case_text = case_match.group(1) if case_match else "N/A"
-                    sheet_text = sheet_match.group(1) if sheet_match else "N/A"
+                    # Extract the "(Case A4, Sheet A)" part robustly
+                    loc_match = re.search(r"\(.*?Case\s*([A-Za-z0-9]+).*?Sheet\s*([A-Za-z])", a)
+                    if loc_match:
+                        case_text = loc_match.group(1)
+                        sheet_text = loc_match.group(2)
+                    else:
+                        case_text, sheet_text = "N/A", "N/A"
 
                     st.markdown(f"""
                     **🧾 Item:** {item_part}  
@@ -233,6 +234,8 @@ def display_detailed_results(ans):
                 st.write(a)
     else:
         st.write(ans)
+
+
 
 # -------------------------------
 # Sidebar for browsing
