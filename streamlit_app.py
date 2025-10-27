@@ -261,7 +261,7 @@ if not selected_row.empty:
 # Main interface
 # -------------------------------
 st.title("📦 Edmond's Inventory Chatbot (Excel + RAG)")
-st.subheader("sample Excel file available in Github")
+st.subheader("* sample Excel file available in Github *")
 st.caption("Ask naturally or explore using the buttons below.")
 
 col1, col2, col3 = st.columns(3)
