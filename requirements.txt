@@ -1,8 +1,9 @@
 streamlit
 pandas
 openpyxl
-langchain
-langchain-community
+langchain==0.1.16
+langchain-core==0.1.40
+langchain-community==0.0.24
 langchain-huggingface
 sentence-transformers
 transformers
