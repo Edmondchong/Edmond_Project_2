@@ -14,8 +14,10 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 # Config
 # -------------------------------
 DATA_PATH = "ABC.xlsx"
-st.set_page_config(page_title="📦 Edmond's Inventory Chatbot (Excel + RAG), (Sample Excel file is in Github)", layout="wide")
+st.set_page_config(page_title="📦 Edmond's Inventory Chatbot (Excel + RAG)", layout="wide")
 
+st.title("📦 Edmond's Inventory Chatbot (Excel + RAG)")
+st.caption("💡 Sample Excel file is available in Github")
 
 # -------------------------------
 # Load Excel + Build RAG Pipeline
