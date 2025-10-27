@@ -19,11 +19,7 @@ st.set_page_config(page_title="📦 Edmond's Inventory Chatbot (Excel + RAG)", l
 # -------------------------------
 # Header
 # -------------------------------
-st.title("📦 Edmond's Inventory Chatbot (Excel + RAG)")
-st.markdown(
-    "<p style='font-size:16px; color:gray; margin-top:-10px;'>💡 Sample Excel file is available in GitHub</p>",
-    unsafe_allow_html=True
-)
+st.subheader("Sample Excel file is available in GitHub")
 
 # -------------------------------
 # Load Excel + Build RAG Pipeline
