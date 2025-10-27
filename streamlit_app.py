@@ -14,7 +14,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 # Config
 # -------------------------------
 DATA_PATH = "ABC.xlsx"
-st.set_page_config(page_title="📦 Edmond's Inventory Chatbot (Excel + RAG). Sample Excel file is available in GitHub", layout="wide")
+st.set_page_config(page_title="📦 Edmond's Inventory Chatbot (Excel + RAG)", layout="wide")
 
 # -------------------------------
 # Load Excel + Build RAG Pipeline
@@ -260,7 +260,7 @@ if not selected_row.empty:
 # -------------------------------
 # Main interface
 # -------------------------------
-st.title("📦 Edmond's Inventory Chatbot (Excel + RAG)")
+st.title("📦 Edmond's Inventory Chatbot (Excel + RAG), sample Excel file available in Github")
 st.caption("Ask naturally or explore using the buttons below.")
 
 col1, col2, col3 = st.columns(3)
