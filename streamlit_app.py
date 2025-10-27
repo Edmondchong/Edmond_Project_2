@@ -5,7 +5,7 @@ from difflib import get_close_matches
 from langchain_core.documents import Document
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.chains import RetrievalQA
+from langchain.chains.retrieval_qa.base import RetrievalQA
 from langchain_huggingface import HuggingFacePipeline
 from langchain.prompts import PromptTemplate
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
