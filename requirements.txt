@@ -1,7 +1,7 @@
 streamlit
 pandas
 openpyxl
-langchain
+langchain==0.1.14
 langchain-core
 langchain-community
 langchain-huggingface
