@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 from difflib import get_close_matches
-from langchain.schema import Document
+from langchain_core.documents import Document
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
