@@ -1,20 +1,11 @@
-
-# --- Core ---
-streamlit==1.31.0
-pandas==2.2.2
+streamlit
+pandas
 openpyxl
-
-# --- LangChain (stable pre-1.0 branch) ---
 langchain==0.1.16
 langchain-core==0.1.40
 langchain-community==0.0.24
-langchain-huggingface==0.0.3
-
-# --- Hugging Face & ML ---
-transformers==4.37.2
-sentence-transformers==2.2.2
-torch==2.2.1
-faiss-cpu==1.8.0
-
-# --- Misc utilities ---
-protobuf<=3.20.3
+langchain-huggingface
+sentence-transformers
+transformers
+faiss-cpu
+torch
