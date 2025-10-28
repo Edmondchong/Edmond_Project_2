@@ -8,7 +8,7 @@
 
 📄 The sample Excel file [ABC.xlsx](./ABC.xlsx) is included to let recruiters explore the data schema and test item queries interactively. 
 
-The Streamlit demo may go idle after a period of inactivity — click “Yes, get this app back up” to restart it. Please note that it may take a short while to reload.
+** The Streamlit demo may go idle after a period of inactivity — click “Yes, get this app back up” to restart it. Please note that it may take a short while to reload.
 ---
 
 ### 📖 Project Overview: 💬 Edmond’s Inventory Chatbot System
